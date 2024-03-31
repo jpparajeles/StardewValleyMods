@@ -143,7 +143,8 @@ namespace WildFlowersReimagined
                         else
                         {
                             var originalGrass = terrainFeature as Grass;
-                            var crop = new Crop(entry.IndexOfHarvest, entry.Vector2X, entry.Vector2Y, gameLocation);
+                            var crop = new Crop(entry.SeedIndex, entry.Vector2X, entry.Vector2Y, gameLocation);
+                            crop.growCompletely();
                             crop.phaseToShow.Value = entry.PhaseToShow;
                             crop.currentPhase.Value = entry.CurrentPhase;
                             crop.tintColor.Value = new Color(entry.TintColorR, entry.TintColorG, entry.TintColorB, entry.TintColorA);
@@ -248,13 +249,13 @@ namespace WildFlowersReimagined
                     Vector2Y = (int)pme.Key.Y,
                     PhaseToShow = pme.Value.flowerGrass.Crop.phaseToShow.Value,
                     CurrentPhase = pme.Value.flowerGrass.Crop.currentPhase.Value,
-                    IndexOfHarvest = pme.Value.flowerGrass.Crop.indexOfHarvest.Value,
+                    SeedIndex = pme.Value.flowerGrass.Crop.netSeedIndex.Value,
                     TintColorR = pme.Value.flowerGrass.Crop.tintColor.Value.R,
                     TintColorG = pme.Value.flowerGrass.Crop.tintColor.Value.G,
                     TintColorB = pme.Value.flowerGrass.Crop.tintColor.Value.B,
                     TintColorA = pme.Value.flowerGrass.Crop.tintColor.Value.A,
                     Dead = pme.Value.flowerGrass.Crop.dead.Value,
-                }).ToList()),
+                }).Where(sdi => sdi.SeedIndex != null).ToList()),
             };
             this.Helper.Data.WriteSaveData(saveDataKey, saveData);
         }
@@ -316,7 +317,15 @@ namespace WildFlowersReimagined
                     if (grassValue.modData.ContainsKey(modDataKey) && localPatchMap.ContainsKey(key))
                     {
                         var (flowerGrass, originalGrass) = localPatchMap[key];
-                        location.terrainFeatures[key] = flowerGrass;
+                        if (localFlowers.Contains(flowerGrass.Crop.netSeedIndex.Value))
+                        {
+                            location.terrainFeatures[key] = flowerGrass;
+                        }
+                        else
+                        {
+                            grassValue.modData.Remove(modDataKey);
+                            localPatchMap.Remove(key);
+                        }
                     }
                     // if not let's do random chance
                     else

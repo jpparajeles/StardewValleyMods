@@ -14,7 +14,7 @@ namespace WildFlowersReimagined
 
         public int PhaseToShow { get; set; }
         public int CurrentPhase {  get; set; }
-        public string IndexOfHarvest { get; set; }
+        public string? SeedIndex { get; set; }
         public byte TintColorR { get; set; }
         public byte TintColorG { get; set; }
         public byte TintColorB { get; set; }
