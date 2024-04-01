@@ -125,7 +125,7 @@ namespace WildFlowersReimagined
             var locations = GetValidLocations();
             var locationDict = GetValidLocations().ToDictionary(x => x.NameOrUniqueName);
 
-            foreach ( var (location, dataList) in savedData.patchMapData ) {
+            foreach ( var (location, dataList) in savedData.PatchMapData ) {
                 var localPatchMap = GetLocationPatchMap(location);
                 if (!locationDict.TryGetValue(location, out var gameLocation))
                 {
@@ -243,7 +243,7 @@ namespace WildFlowersReimagined
             // save the mod data next
             var saveData = new SaveData
             {
-                patchMapData = patchMap.ToDictionary(pm => pm.Key, pm => pm.Value.Select(pme => new SaveDataItem
+                PatchMapData = patchMap.ToDictionary(pm => pm.Key, pm => pm.Value.Select(pme => new SaveDataItem
                 {
                     Vector2X = (int)pme.Key.X,
                     Vector2Y = (int)pme.Key.Y,

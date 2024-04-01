@@ -26,6 +26,6 @@ namespace WildFlowersReimagined
 
     public sealed class SaveData
     {
-        public Dictionary<string, List<SaveDataItem>> patchMapData {  get; set; }
+        public Dictionary<string, List<SaveDataItem>> PatchMapData { get; set; }
     }
 }
