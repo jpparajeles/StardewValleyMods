@@ -1,2 +1,5 @@
+# 1.1.0
+- *BUGFIX* Allows flowers with multiple seeds to work
+
 # 1.0.0
 - Initial mod release

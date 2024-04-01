@@ -3,7 +3,6 @@ using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Extensions;
-using StardewValley.GameData.Crops;
 using StardewValley.TerrainFeatures;
 
 namespace WildFlowersReimagined
@@ -23,7 +22,11 @@ namespace WildFlowersReimagined
         /// <summary>
         /// Patches made to the original terrainFeatures
         /// </summary>
-        private Dictionary<string,Dictionary<Vector2, (FlowerGrass flowerGrass, Grass originalGrass)>> patchMap = new();
+        private readonly Dictionary<string,Dictionary<Vector2, (FlowerGrass flowerGrass, Grass originalGrass)>> patchMap = new();
+        /// <summary>
+        /// Helper class to get all the seeds from the object data
+        /// </summary>
+        private readonly SeedMap seedMap = new();
 
         /*********
         ** Public methods
@@ -48,8 +51,6 @@ namespace WildFlowersReimagined
             helper.Events.GameLoop.Saving += this.OnSaving;
             helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunch;
-
-            patchMap = new Dictionary<string, Dictionary<Vector2, (FlowerGrass flowerGrass, Grass originalGrass)>>();
 
             this.Monitor.LogOnce("Mod enabled and ready", LogLevel.Debug);
 
@@ -275,6 +276,10 @@ namespace WildFlowersReimagined
                 this.Monitor.Log("Mod disabled", LogLevel.Debug);
                 return;
             }
+
+            //Init the seedmap
+            seedMap.Init();
+
             // Get all locations where flowers may spawn
             var validLocations = GetValidLocations();
             // If there is not a valid location exit
@@ -284,15 +289,11 @@ namespace WildFlowersReimagined
                 return;
             }
 
-            var seedMapIds = Game1.cropData.ToDictionary(p => p.Value.HarvestItemId, p => p.Key);
-            var seedMap = Game1.cropData.ToDictionary(p => p.Value.HarvestItemId, p => p.Value);
-
-
             foreach (var location in validLocations)
             {
                 var locationSeason = location.GetSeason();
                 var localPatchMap = GetLocationPatchMap(location.NameOrUniqueName);
-                var localFlowers = Game1.objectData.Where(p => p.Value.Category == StardewValley.Object.flowersCategory && seedMap.TryGetValue(p.Key, out CropData data) && (location.SeedsIgnoreSeasonsHere() || data.Seasons.Contains(locationSeason))).Select(p=> seedMapIds[p.Key]).ToList();
+                var localFlowers = Game1.objectData.Where(p => p.Value.Category == StardewValley.Object.flowersCategory).SelectMany(p => seedMap.GetSeedsForLocation(p.Key, location)).ToList();
                 if (localFlowers.Count == 0)
                 {
                     this.Monitor.LogOnce($"{location.Name}: {locationSeason} has no flowers available, skipping", LogLevel.Warn);
