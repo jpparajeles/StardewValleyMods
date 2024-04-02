@@ -208,7 +208,8 @@ namespace WildFlowersReimagined
         private void OnSaving(object? sender, SavingEventArgs e)
         {
             // Always restore the save data
-            foreach (var location in GetValidLocations())
+            var validLocations = GetValidLocations();
+            foreach (var location in validLocations)
             {
                 // replace back the grass
                 var localPatchMap = GetLocationPatchMap(location.NameOrUniqueName);
@@ -233,7 +234,43 @@ namespace WildFlowersReimagined
                 }
             }
 
-            // todo?: remove locations not on valid?
+            // Failsafe: Remove any and all Flower grass remaining as they have been lost from the patch map 
+            var countInvalidLocations = 0;
+            var countInvalidTiles = 0;
+            foreach (var location in Game1.locations)
+            {
+                var lostTiles = location.terrainFeatures.Pairs.Where(p=> p.Value is FlowerGrass).Select(p=> p.Key).ToList();
+                if (lostTiles.Count > 0)
+                {
+
+                    countInvalidLocations++;
+                    countInvalidTiles+=lostTiles.Count;
+
+                    var locationName = location.NameOrUniqueName;
+                    this.Monitor.Log($"Location {locationName} had {lostTiles.Count} lost tiles. Starting Save Repair process", LogLevel.Warn);
+                    if (!validLocations.Contains(location))
+                    {
+                        this.Monitor.Log("Grass found on invalid location");
+                    }
+                    if (!patchMap.ContainsKey(locationName))
+                    {
+                        this.Monitor.Log("Location not found on the patch map");
+                    }
+                    else
+                    {
+                        // I don't expect this to ever run, but just in case
+                        this.Monitor.Log("Location found on the patch map, deleting data");
+                        this.patchMap.Remove(locationName);
+                    }
+                    foreach (var key in lostTiles)
+                    {
+                        location.terrainFeatures.Remove(key);
+                    }
+                    this.Monitor.Log("Save data for the repair should be fixed now");
+                }
+            }
+
+
 
             if (!this.Config.ModEnabled)
             {
