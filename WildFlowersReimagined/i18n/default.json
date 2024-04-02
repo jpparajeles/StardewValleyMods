@@ -4,5 +4,5 @@
   "config.grow-chance.key": "Wild flower grow chance",
   "config.grow-chance.tooltip": "Chance to grow a flower in a patch of grass",
   "config.HarvestByScythe.key": "Harvest by Scythe",
-  "config.HarvestByScythe.tooltip": "Enabled if you want the flowers to be harvested by scythe instead"
+  "config.HarvestByScythe.tooltip": "If enabled the flowers will need to be harvested by scythe, otherwise they will be harvested by hand"
 }
