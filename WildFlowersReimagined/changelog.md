@@ -1,4 +1,4 @@
-# 1.2.0-beta.1
+# 1.2.0
 - *BUGFIX* Removes invalid / missing FlowerGrass from any location
 - *Improvement*: Better description for `HarvestByScythe`
 
