@@ -1,5 +1,5 @@
 # 1.3.0
-- *Bugfix* Fix scythe harvestwsas
+- *Bugfix* Fix scythe harvests
 
 # 1.2.0
 - *BUGFIX* Removes invalid / missing FlowerGrass from any location
