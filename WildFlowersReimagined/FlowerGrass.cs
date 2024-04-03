@@ -74,9 +74,14 @@ namespace WildFlowersReimagined
             }
         }
 
-        private void Harvest(Vector2 tileLocation)
+        /// <summary>
+        /// Method for harvesting the flowers, 
+        /// </summary>
+        /// <param name="tileLocation"> tile location </param>
+        /// <param name="useScythe">if it was scythe or hand. The game code has different behaviors for this</param>
+        private void Harvest(Vector2 tileLocation, bool useScythe)
         {
-            this.Crop.harvest((int)tileLocation.X, (int)tileLocation.Y, fakeDirt);
+            this.Crop.harvest((int)tileLocation.X, (int)tileLocation.Y, fakeDirt, isForcedScytheHarvest: useScythe);
             this.Crop = null;
         }
 
@@ -84,7 +89,7 @@ namespace WildFlowersReimagined
         {
             if (this.Crop != null && !this.FlowerGrassConfig.UseScythe)
             {
-                Harvest(tileLocation);
+                Harvest(tileLocation, false);
             }
 
             return false;
@@ -94,7 +99,7 @@ namespace WildFlowersReimagined
         {
             if (this.Crop != null && this.FlowerGrassConfig.UseScythe && tool != null && tool.isScythe())
             {
-                Harvest(tileLocation);
+                Harvest(tileLocation, true);
             }
             return base.performToolAction(tool, damage, tileLocation);
         }
