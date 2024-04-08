@@ -13,7 +13,7 @@
   "config.FlowerPage.description": "This page allows you to configure how likely each seed will grow.\nA disabled seed will not produce flowers",
   "config.FlowerProbability.0": "Disabled",
   "config.FlowerProbability.1": "Rarely",
-  "config.FlowerProbability.2": "Occationally",
+  "config.FlowerProbability.2": "Occasionally",
   "config.FlowerProbability.3": "Normal",
   "config.FlowerProbability.4": "Often",
   "config.FlowerProbability.5": "Abundant"
