@@ -1,8 +1,10 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
 using StardewValley.Extensions;
+using StardewValley.Menus;
 using StardewValley.TerrainFeatures;
 
 namespace WildFlowersReimagined
@@ -14,19 +16,32 @@ namespace WildFlowersReimagined
         private const string modDataKey = "jpp.WildFlowersReimagined.flower";
         private const string saveDataKey = "jpp.WildFlowersReimagined.flower";
 
-        
+
         /// <summary>
         /// The mod configuration from the player.
         /// </summary>
         private ModConfig Config;
         /// <summary>
+        /// ModConfig, to add options later down the line
+        /// </summary>
+        private IGenericModConfigMenuApi? configMenu;
+        /// <summary>
+        /// Flag to not initialize the flower config more than once
+        /// </summary>
+        private bool flowerConfigEnabled = false;
+
+        /// <summary>
         /// Patches made to the original terrainFeatures
         /// </summary>
-        private readonly Dictionary<string,Dictionary<Vector2, (FlowerGrass flowerGrass, Grass originalGrass)>> patchMap = new();
+        private readonly Dictionary<string, Dictionary<Vector2, (FlowerGrass flowerGrass, Grass originalGrass)>> patchMap = new();
         /// <summary>
         /// Helper class to get all the seeds from the object data
         /// </summary>
         private readonly SeedMap seedMap = new();
+
+        
+
+
 
         /*********
         ** Public methods
@@ -37,11 +52,12 @@ namespace WildFlowersReimagined
         {
             this.Config = this.Helper.ReadConfig<ModConfig>();
             // if we cannot find the config or the mod is disable exit early
-            if (this.Config == null || ! this.Config.ModEnabled) {
+            if (this.Config == null || !this.Config.ModEnabled)
+            {
                 this.Config ??= new ModConfig
-                    {
-                        ModEnabled = false
-                    };
+                {
+                    ModEnabled = false
+                };
                 return;
             }
 
@@ -67,12 +83,12 @@ namespace WildFlowersReimagined
         private void OnGameLaunch(object? sender, GameLaunchedEventArgs e)
         {
             // get Generic Mod Config Menu's API (if it's installed)
-            var configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
+            configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (configMenu is null)
             {
                 this.Monitor.Log("Generic Config Menu not found");
                 return;
-            }   
+            }
 
             // register mod
             configMenu.Register(
@@ -107,6 +123,98 @@ namespace WildFlowersReimagined
                 getValue: () => this.Config.WildflowerGrowChance,
                 setValue: value => this.Config.WildflowerGrowChance = value
             );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: I18n.Config_PreserveFlowersOnProbability0_Key,
+                tooltip: I18n.Config_PreserveFlowersOnProbability0_Tooltip,
+                getValue: () => this.Config.PreserveFlowersOnProbability0,
+                setValue: value => this.Config.PreserveFlowersOnProbability0 = value
+            );
+
+
+        }
+
+        /// <summary>
+        /// Adds the flower config section of the config map.
+        /// </summary>
+        private void AddFlowerConfig()
+        {
+            if (!Config.ModEnabled || configMenu == null)
+            {
+                return;
+            }
+
+            // load the decoder
+            string[] flowerProbabilityLabels =
+            {
+                I18n.Config_FlowerProbability_0(),
+                I18n.Config_FlowerProbability_1(),
+                I18n.Config_FlowerProbability_2(),
+                I18n.Config_FlowerProbability_3(),
+                I18n.Config_FlowerProbability_4(),
+                I18n.Config_FlowerProbability_5(),
+
+            };        
+
+            var flowerProbabilityDecoder = flowerProbabilityLabels.Select((element, index) => (element, index)).ToDictionary(p => p.element, p => p.index);
+
+
+            configMenu.AddPageLink(
+                mod: this.ModManifest,
+                pageId: "flower_config",
+                text: I18n.Config_FlowerPage_Link,
+                tooltip: I18n.Config_FlowerPage_Tooltip
+            );
+            configMenu.AddPage(
+                mod: this.ModManifest,
+                pageId: "flower_config",
+                pageTitle: I18n.Config_FlowerPage_Key
+            );
+
+            configMenu.AddParagraph(
+                mod: this.ModManifest,
+                text: I18n.Config_FlowerPage_Description
+            );
+
+
+            // var flowers = Game1.objectData.Where(p => p.Value.Category == StardewValley.Object.flowersCategory).ToList();
+            var flowers = seedMap.GetFlowerConfigMap();
+            
+            foreach (var (flowerInfo, SeedListData) in flowers)
+            {
+                var flowerData = flowerInfo.GetParsedData();
+                if (SeedListData.Count < 1)
+                {
+                    this.Monitor.Log($"{flowerData.InternalName}:{flowerData.DisplayName} has no seed data", LogLevel.Warn);
+                    continue;
+                }
+                var item = flowerInfo.CreateItem(0);
+
+                configMenu.AddComplexOption(
+                    mod: this.ModManifest,
+                    name: () => flowerData.DisplayName,
+                    tooltip: () => $"{flowerData.ItemId}:{flowerData.InternalName}",
+                    draw: (sb, v) =>
+                    {
+
+                        item.drawInMenu(sb, v, 1.0f);
+                    }
+                );
+                // we cannot gargantee that there is only one seed per flower
+                foreach (var seedInfo in SeedListData)
+                {
+                    var seedData = seedInfo.GetParsedData();
+                    configMenu.AddTextOption(
+                        mod: this.ModManifest,
+                        getValue: () => flowerProbabilityLabels[this.Config.FlowerProbabilityMap.GetValueOrDefault(seedData.ItemId, 3)],
+                        setValue: (v) => this.Config.FlowerProbabilityMap[seedData.ItemId] = flowerProbabilityDecoder.GetValueOrDefault(v, 3),
+                        name: () => seedData.DisplayName,
+                        tooltip: () => $"{seedData.ItemId}:{seedData.InternalName}",
+                        allowedValues: flowerProbabilityLabels
+                    );
+                }
+            }
         }
 
         /// <summary>
@@ -126,15 +234,16 @@ namespace WildFlowersReimagined
             var locations = GetValidLocations();
             var locationDict = GetValidLocations().ToDictionary(x => x.NameOrUniqueName);
 
-            foreach ( var (location, dataList) in savedData.PatchMapData ) {
+            foreach (var (location, dataList) in savedData.PatchMapData)
+            {
                 var localPatchMap = GetLocationPatchMap(location);
                 if (!locationDict.TryGetValue(location, out var gameLocation))
                 {
                     this.Monitor.Log($"Location {location} not found in the game valid locations, skipping it", LogLevel.Warn);
-                } 
+                }
                 else
                 {
-                    foreach ( var entry in dataList )
+                    foreach (var entry in dataList)
                     {
                         var key = new Vector2(entry.Vector2X, entry.Vector2Y);
                         if (!gameLocation.terrainFeatures.TryGetValue(key, out var terrainFeature) && terrainFeature is not Grass && terrainFeature.modData.ContainsKey(modDataKey))
@@ -239,12 +348,12 @@ namespace WildFlowersReimagined
             var countInvalidTiles = 0;
             foreach (var location in Game1.locations)
             {
-                var lostTiles = location.terrainFeatures.Pairs.Where(p=> p.Value is FlowerGrass).Select(p=> p.Key).ToList();
+                var lostTiles = location.terrainFeatures.Pairs.Where(p => p.Value is FlowerGrass).Select(p => p.Key).ToList();
                 if (lostTiles.Count > 0)
                 {
 
                     countInvalidLocations++;
-                    countInvalidTiles+=lostTiles.Count;
+                    countInvalidTiles += lostTiles.Count;
 
                     var locationName = location.NameOrUniqueName;
                     this.Monitor.Log($"Location {locationName} had {lostTiles.Count} lost tiles. Starting Save Repair process", LogLevel.Warn);
@@ -316,6 +425,11 @@ namespace WildFlowersReimagined
 
             //Init the seedmap
             seedMap.Init();
+            if (!this.flowerConfigEnabled)
+            {
+                AddFlowerConfig();
+                flowerConfigEnabled = true;
+            }
 
             // Get all locations where flowers may spawn
             var validLocations = GetValidLocations();
@@ -330,10 +444,15 @@ namespace WildFlowersReimagined
             {
                 var locationSeason = location.GetSeason();
                 var localPatchMap = GetLocationPatchMap(location.NameOrUniqueName);
-                var localFlowers = Game1.objectData.Where(p => p.Value.Category == StardewValley.Object.flowersCategory).SelectMany(p => seedMap.GetSeedsForLocation(p.Key, location)).ToList();
+                var localFlowers = seedMap.GetSeedsForLocation(location, Config.FlowerProbabilityMap);
+                var localFlowerCandidates = seedMap.GetSeedCandidatesForLocation(location);
                 if (localFlowers.Count == 0)
                 {
                     this.Monitor.LogOnce($"{location.Name}: {locationSeason} has no flowers available, skipping", LogLevel.Warn);
+                    if (localFlowerCandidates.Count > 0)
+                    {
+                        this.Monitor.LogOnce("Current settings prevent flowers from appearing", LogLevel.Warn);
+                    }
                     return;
                 }
                 else
@@ -355,7 +474,8 @@ namespace WildFlowersReimagined
                     if (grassValue.modData.ContainsKey(modDataKey) && localPatchMap.ContainsKey(key))
                     {
                         var (flowerGrass, originalGrass) = localPatchMap[key];
-                        if (localFlowers.Contains(flowerGrass.Crop.netSeedIndex.Value))
+                        // keep the flower if it's in the probability list or PreserveFlowersOnProbability0 and it's in the candidate list
+                        if (localFlowers.Contains(flowerGrass.Crop.netSeedIndex.Value) || (Config.PreserveFlowersOnProbability0 && localFlowerCandidates.Contains(flowerGrass.Crop.netSeedIndex.Value)))
                         {
                             location.terrainFeatures[key] = flowerGrass;
                         }
@@ -375,7 +495,7 @@ namespace WildFlowersReimagined
                         {
 
                             var choice = Game1.random.ChooseFrom(localFlowers);
-                            
+
                             var seed = Crop.getRandomFlowerSeedForThisSeason(locationSeason);
 
                             // string dm = "ok";
@@ -397,6 +517,6 @@ namespace WildFlowersReimagined
                     }
                 }
             }
-        }        
+        }
     }
 }
