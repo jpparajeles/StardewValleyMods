@@ -237,7 +237,7 @@ namespace WildFlowersReimagined
             foreach (var (location, dataList) in savedData.PatchMapData)
             {
                 var localPatchMap = GetLocationPatchMap(location);
-                if (!locationDict.TryGetValue(location, out var gameLocation))
+                if (!locationDict.TryGetValue(location, out var gameLocation) || gameLocation == null)
                 {
                     this.Monitor.Log($"Location {location} not found in the game valid locations, skipping it", LogLevel.Warn);
                 }
@@ -246,23 +246,31 @@ namespace WildFlowersReimagined
                     foreach (var entry in dataList)
                     {
                         var key = new Vector2(entry.Vector2X, entry.Vector2Y);
-                        if (!gameLocation.terrainFeatures.TryGetValue(key, out var terrainFeature) && terrainFeature is not Grass && terrainFeature.modData.ContainsKey(modDataKey))
+                        try
                         {
-                            this.Monitor.Log($"{location}:{key} is not valid, skipping", LogLevel.Warn);
+                            if (!gameLocation.terrainFeatures.TryGetValue(key, out var terrainFeature) && terrainFeature != null && terrainFeature is not Grass && terrainFeature.modData.ContainsKey(modDataKey))
+                            {
+                                this.Monitor.Log($"{location}:{key} is not valid, skipping", LogLevel.Warn);
+                            }
+                            else
+                            {
+                                var originalGrass = terrainFeature as Grass;
+                                var crop = new Crop(entry.SeedIndex, entry.Vector2X, entry.Vector2Y, gameLocation);
+                                crop.growCompletely();
+                                crop.phaseToShow.Value = entry.PhaseToShow;
+                                crop.currentPhase.Value = entry.CurrentPhase;
+                                crop.tintColor.Value = new Color(entry.TintColorR, entry.TintColorG, entry.TintColorB, entry.TintColorA);
+                                crop.dead.Value = entry.Dead;
+
+                                var flowerGrass = new FlowerGrass(originalGrass.grassType.Value, originalGrass.numberOfWeeds.Value, crop, this.Config.FlowerGrassConfig);
+                                localPatchMap[key] = (flowerGrass, originalGrass);
+
+                            }
                         }
-                        else
+                        catch (Exception ex)
                         {
-                            var originalGrass = terrainFeature as Grass;
-                            var crop = new Crop(entry.SeedIndex, entry.Vector2X, entry.Vector2Y, gameLocation);
-                            crop.growCompletely();
-                            crop.phaseToShow.Value = entry.PhaseToShow;
-                            crop.currentPhase.Value = entry.CurrentPhase;
-                            crop.tintColor.Value = new Color(entry.TintColorR, entry.TintColorG, entry.TintColorB, entry.TintColorA);
-                            crop.dead.Value = entry.Dead;
-
-                            var flowerGrass = new FlowerGrass(originalGrass.grassType.Value, originalGrass.numberOfWeeds.Value, crop, this.Config.FlowerGrassConfig);
-                            localPatchMap[key] = (flowerGrass, originalGrass);
-
+                            this.Monitor.Log($"Unexpected exception {ex.Message} skipping {key}", LogLevel.Error);
+                            this.Monitor.LogOnce($"{ex.StackTrace} \n {ex.Source}", LogLevel.Error);
                         }
                     }
                 }

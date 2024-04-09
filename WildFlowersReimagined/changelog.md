@@ -1,3 +1,6 @@
+# 2.0.1
+- *BUGFIX*: Additional null checks and handling on save loading
+
 # 2.0.0
 - *New Feature*: Flower probability configuration. Adds a new set of options that allow the individual configuration of the flowers.
     - Disabled: They will get 0x multiplier to the configuration making them not spawn
