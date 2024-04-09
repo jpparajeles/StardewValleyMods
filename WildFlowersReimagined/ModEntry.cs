@@ -230,6 +230,8 @@ namespace WildFlowersReimagined
                 this.Monitor.Log("Saved data not found, continuing with a blank state", LogLevel.Warn);
                 return;
             }
+            // clear the any saved data
+            this.patchMap.Clear();
 
             var locations = GetValidLocations();
             var locationDict = GetValidLocations().ToDictionary(x => x.NameOrUniqueName);
@@ -248,13 +250,18 @@ namespace WildFlowersReimagined
                         var key = new Vector2(entry.Vector2X, entry.Vector2Y);
                         try
                         {
-                            if (!gameLocation.terrainFeatures.TryGetValue(key, out var terrainFeature) && terrainFeature != null && terrainFeature is not Grass && terrainFeature.modData.ContainsKey(modDataKey))
+                            if (!gameLocation.terrainFeatures.TryGetValue(key, out var terrainFeature) || terrainFeature == null || terrainFeature is not Grass)
                             {
                                 this.Monitor.Log($"{location}:{key} is not valid, skipping", LogLevel.Warn);
                             }
                             else
                             {
                                 var originalGrass = terrainFeature as Grass;
+                                if (originalGrass == null)
+                                {
+                                    this.Monitor.Log("Unexpected null for original grass after is check");
+                                    continue;
+                                }
                                 var crop = new Crop(entry.SeedIndex, entry.Vector2X, entry.Vector2Y, gameLocation);
                                 crop.growCompletely();
                                 crop.phaseToShow.Value = entry.PhaseToShow;
@@ -333,7 +340,7 @@ namespace WildFlowersReimagined
                 foreach (var (key, grassTuple) in localPatchMap)
                 {
                     // check that the tile is a valid FlowerGrass still
-                    if (!location.terrainFeatures.TryGetValue(key, out TerrainFeature terrainFeature) && terrainFeature is not FlowerGrass)
+                    if (!location.terrainFeatures.TryGetValue(key, out TerrainFeature terrainFeature) || terrainFeature is not FlowerGrass)
                     {
                         // either deleted or no longer a Flower grass
                         localPatchMap.Remove(key);
@@ -499,7 +506,6 @@ namespace WildFlowersReimagined
                         var chance = Game1.random.NextDouble();
                         // this.Monitor.Log($"{key} {chance}", LogLevel.Info);
                         if (chance <= this.Config.WildflowerGrowChance)
-                        // if (chance <= this.Config.WildflowerGrowChance && !value.modData.ContainsKey(modDataKey))
                         {
 
                             var choice = Game1.random.ChooseFrom(localFlowers);

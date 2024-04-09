@@ -1,3 +1,8 @@
+# 2.0.2
+- *BUGFIX*: Correct bug fix for 2.0.1, invalid saved data should be skipped with a warning
+- *BUGFIX*: Clear the patch map state when loading a save game in case of loading from title
+- *BUGFIX*: Fix a logic issue when creating the saved data where invalid data was been saved.
+
 # 2.0.1
 - *BUGFIX*: Additional null checks and handling on save loading
 
