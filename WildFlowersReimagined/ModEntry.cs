@@ -68,9 +68,58 @@ namespace WildFlowersReimagined
             helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunch;
 
+            //dbg
+            helper.Events.Input.ButtonPressed += this.DbgButtonPressed;
+            // helper.Events.Multiplayer.ModMessageReceived += this.MMM;
+
             this.Monitor.LogOnce("Mod enabled and ready", LogLevel.Debug);
 
         }
+
+        private void MMM(object? sender, ModMessageReceivedEventArgs e)
+        {
+            if (e.FromModID != ModManifest.UniqueID)
+            {
+                return;
+            }
+            if (Context.IsMainPlayer)
+            {
+                return;
+            }
+            foreach (var location in GetValidLocations())
+            {
+                var toInit = location.terrainFeatures.Pairs.Select(p => p.Value as FlowerGrass).Where(fg => fg != null && !fg.CropInit).ToList();
+                foreach (var flowerGrass in toInit)
+                {
+                    flowerGrass.initFromModData();
+                }
+            }
+        }
+
+        private void DbgButtonPressed(object? sender, ButtonPressedEventArgs e)
+        {
+            if (e.Button == SButton.K)
+            {
+                var currPos = e.Cursor.Tile;
+                var current = Game1.currentLocation;
+
+                current.terrainFeatures.TryGetValue(currPos, out var terrainFeature);
+
+                var sts = "";
+
+                foreach (var loc in Game1.locations)
+                {
+                    if (loc == current)
+                    {
+                        sts = loc.IsActiveLocation().ToString();
+                        break;
+                    }
+                }
+
+                this.Monitor.Log($"{current}:{sts}:{currPos} has {terrainFeature}", LogLevel.Info);
+            }
+        }
+
         /*********
         ** Private methods
         *********/
@@ -371,10 +420,10 @@ namespace WildFlowersReimagined
             var countInvalidTiles = 0;
             foreach (var location in Game1.locations)
             {
+
                 var lostTiles = location.terrainFeatures.Pairs.Where(p => p.Value is FlowerGrass).Select(p => p.Key).ToList();
                 if (lostTiles.Count > 0)
                 {
-
                     countInvalidLocations++;
                     countInvalidTiles += lostTiles.Count;
 
@@ -452,6 +501,12 @@ namespace WildFlowersReimagined
             {
                 AddFlowerConfig();
                 flowerConfigEnabled = true;
+            }
+
+            if (!Context.IsMainPlayer)
+            {
+                // 
+                return;
             }
 
             // Get all locations where flowers may spawn
@@ -538,7 +593,29 @@ namespace WildFlowersReimagined
                         }
                     }
                 }
+
+
+                
             }
+
+            foreach(var location in Game1.locations)
+            {
+                foreach (var (vx, vf) in location.terrainFeatures.Pairs)
+                {
+                    if (!location.IsTileBlockedBy(vx) && location.doesTileHaveProperty((int)vx.X, (int)vx.Y, "Diggable", "Back") != null && !location.IsNoSpawnTile(vx))
+                    {
+                        this.Monitor.Log("!!!!", LogLevel.Alert);
+                    }
+                }
+            }
+
+            /*
+
+            if (Context.IsMultiplayer)
+            {
+                this.Helper.Multiplayer.SendMessage("mod", "string", modIDs: new[] { this.ModManifest.UniqueID });
+            }
+            */
         }
     }
 }
