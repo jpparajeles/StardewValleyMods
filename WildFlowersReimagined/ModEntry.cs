@@ -230,6 +230,12 @@ namespace WildFlowersReimagined
         /// <param name="e">Unused</param>
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
         {
+            // if this is not the main player, don't try to load the data
+            if (! Context.IsMainPlayer)
+            {
+                return;
+            }
+
             var savedData = this.Helper.Data.ReadSaveData<SaveData>(saveDataKey);
             if (savedData == null)
             {
@@ -341,6 +347,11 @@ namespace WildFlowersReimagined
         /// <param name="e"></param>
         private void OnSaving(object? sender, SavingEventArgs e)
         {
+            if (!Context.IsMainPlayer)
+            {
+                return;
+            }
+
             // Always restore the save data
             var validLocations = GetValidLocations();
             foreach (var location in validLocations)
@@ -454,6 +465,12 @@ namespace WildFlowersReimagined
             {
                 AddFlowerConfig();
                 flowerConfigEnabled = true;
+            }
+
+            // if this is not the main player, skip adding data to prevent a crash
+            if (!Context.IsMainPlayer)
+            {
+                return;
             }
 
             // Get all locations where flowers may spawn
