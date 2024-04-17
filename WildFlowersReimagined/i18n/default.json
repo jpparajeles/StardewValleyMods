@@ -16,5 +16,8 @@
   "config.FlowerProbability.2": "Occasionally",
   "config.FlowerProbability.3": "Normal",
   "config.FlowerProbability.4": "Often",
-  "config.FlowerProbability.5": "Abundant"
+  "config.FlowerProbability.5": "Abundant",
+  "config.AllLocations.Key": "Check all locations",
+  "config.AllLocations.Tooltip":  "If this option is enabled flower will try to appear on all the game locations that have grass instead of the default Farms and Greenhouse locations"
+
 }

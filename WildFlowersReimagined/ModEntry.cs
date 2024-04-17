@@ -132,7 +132,13 @@ namespace WildFlowersReimagined
                 setValue: value => this.Config.PreserveFlowersOnProbability0 = value
             );
 
-
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: I18n.Config_AllLocations_Key,
+                tooltip: I18n.Config_AllLocations_Tooltip,
+                getValue: () => this.Config.CheckAllLocations,
+                setValue: value => this.Config.CheckAllLocations = value
+            );
         }
 
         /// <summary>
@@ -306,8 +312,12 @@ namespace WildFlowersReimagined
         /// Get a list of the locations that can have grass
         /// </summary>
         /// <returns>List of locations that can have grass</returns>
-        private static List<GameLocation> GetValidLocations()
+        private List<GameLocation> GetValidLocations()
         {
+            if (this.Config.CheckAllLocations)
+            {
+                return Game1.locations.ToList();
+            }
             var validLocations = new List<GameLocation>();
             foreach (var gameLocation in Game1.locations)
             {

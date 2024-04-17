@@ -9,6 +9,8 @@
         public Dictionary<string, int> FlowerProbabilityMap { get; set; } = new Dictionary<string, int>();
 
         public bool PreserveFlowersOnProbability0 { get; set; } = true;
+
+        public bool CheckAllLocations { get; set; } = false;
         
     }
 
