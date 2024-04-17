@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "WildFlowersReimagined": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "SMAPI_MODS_PATH": "C:\\Users\\josep\\AppData\\Roaming\\Stardrop\\Data\\Selected Mods"
+      },
+      "nativeDebugging": false
+    }
+  }
+}
