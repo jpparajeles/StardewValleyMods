@@ -68,12 +68,43 @@ namespace WildFlowersReimagined
             helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunch;
 
+            //dbg
+            helper.Events.Input.ButtonPressed += this.DbgButtonPressed;
+
+
             this.Monitor.LogOnce("Mod enabled and ready", LogLevel.Debug);
 
         }
         /*********
         ** Private methods
         *********/
+        
+        private void DbgButtonPressed(object? sender, ButtonPressedEventArgs e)
+        {
+            if (e.Button == SButton.K)
+            {
+                var currPos = e.Cursor.Tile;
+                var current = Game1.currentLocation;
+
+                current.terrainFeatures.TryGetValue(currPos, out var terrainFeature);
+
+                var sts = "";
+
+                foreach (var loc in Game1.locations)
+                {
+                    if (loc == current)
+                    {
+                        sts = loc.IsActiveLocation().ToString();
+                        break;
+                    }
+                }
+
+                this.Monitor.Log($"{current}:{sts}:{currPos} has {terrainFeature}", LogLevel.Info);
+            }
+        }
+
+
+
 
         /// <summary>
         /// On Game Launch event: Adds the Generic Mod Config menu entry
@@ -82,11 +113,24 @@ namespace WildFlowersReimagined
         /// <param name="e">Unused</param>
         private void OnGameLaunch(object? sender, GameLaunchedEventArgs e)
         {
+
+            // get spacecore
+            var spacecore = this.Helper.ModRegistry.GetApi<ISpaceCoreApi>("spacechase0.SpaceCore");
+            if (spacecore == null)
+            {
+                this.Monitor.Log("SpaceCore not found, multiplayer will not work as expected", LogLevel.Warn);
+            }
+            else
+            {
+                spacecore.RegisterSerializerType(typeof(FlowerGrass));
+                this.Monitor.Log("SpaceCore Registration OK", LogLevel.Info);
+            }
+
             // get Generic Mod Config Menu's API (if it's installed)
             configMenu = this.Helper.ModRegistry.GetApi<IGenericModConfigMenuApi>("spacechase0.GenericModConfigMenu");
             if (configMenu is null)
             {
-                this.Monitor.Log("Generic Config Menu not found");
+                this.Monitor.Log("Generic Config Menu not found", LogLevel.Info);
                 return;
             }
 

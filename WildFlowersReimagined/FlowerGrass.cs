@@ -3,17 +3,22 @@ using StardewValley.TerrainFeatures;
 using Netcode;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using System.Xml.Serialization;
 
 namespace WildFlowersReimagined
 {
+    [XmlType("Mods_jppWildFlowersReimagined_FlowerGrass")]
     public class FlowerGrass : Grass
     {
+        [XmlIgnore]
         private readonly HoeDirt fakeDirt = new();
 
-        private readonly NetRef<Crop> netCrop = new();
-        
+        public readonly NetRef<Crop> netCrop = new(new());
+
+        [XmlIgnore]
         private List<Action<GameLocation, Vector2>> queuedActions = new();
 
+        [XmlIgnore]
         public Crop Crop
         {
             get
