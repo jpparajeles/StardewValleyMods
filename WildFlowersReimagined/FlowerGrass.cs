@@ -4,6 +4,7 @@ using Netcode;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Xml.Serialization;
+using StardewValley.Tools;
 
 namespace WildFlowersReimagined
 {
@@ -51,22 +52,46 @@ namespace WildFlowersReimagined
                 }
             };
 
+            netCrop.fieldChangeVisibleEvent += delegate
+            {
+                if (netCrop.Value != null)
+                {
+                    netCrop.Value.Dirt = fakeDirt;
+                    netCrop.Value.currentLocation = Location;
+                    netCrop.Value.updateDrawMath(Tile);
+                }
+            };
+
         }
 
         public FlowerGrass() : base()
         {
-            Location = Game1.currentLocation;
+            // Location = Game1.currentLocation;
             FlowerGrassConfig = new FlowerGrassConfig();
+            
         }
 
         public FlowerGrass(int which, int numberOfWeeds, Crop crop, FlowerGrassConfig flowerGrassConfig) : this()
         {
+            Location = Game1.currentLocation;
             grassType.Value = (byte)which;
-            loadSprite();
             this.numberOfWeeds.Value = numberOfWeeds;
             this.Crop = crop;
+            loadSprite();
             this.FlowerGrassConfig = flowerGrassConfig;
 
+        }
+
+        public override void loadSprite()
+        {
+            base.loadSprite();
+            Crop?.updateDrawMath(Tile);
+        }
+
+        public override void performPlayerEntryAction()
+        {
+            base.performPlayerEntryAction();
+            Crop?.updateDrawMath(Tile);
         }
 
         public override void draw(SpriteBatch spriteBatch)
@@ -77,6 +102,23 @@ namespace WildFlowersReimagined
             {
                 Crop.draw(spriteBatch, tile, Color.White, shakeRotation);
             }
+        }
+
+        public override void dayUpdate()
+        {
+            base.dayUpdate();
+            if (this.Crop != null)
+            {
+                Crop.newDay(0);
+            }
+            
+            // kill at the end of the season???
+            //GameLocation location = Location;
+            //if ((bool)location.isOutdoors && location.GetSeason() == Season.Winter && crop != null && !crop.isWildSeedCrop() && !crop.IsInSeason(location))
+            //{
+            //    destroyCrop(showAnimation: false);
+            //}
+
         }
 
         /// <summary>
@@ -110,6 +152,17 @@ namespace WildFlowersReimagined
                 Harvest(tileLocation, true);
             }
             return base.performToolAction(tool, damage, tileLocation);
+        }
+
+        public string ToDebugString()
+        {
+            var flowerStr = "None";
+            if (this.Crop != null)
+            {
+                flowerStr = $"{this.Crop.DrawnCropTexture} ::: {this.Crop.forageCrop.Value} ::: {this.Crop.flip.Value} ::: {this.Crop.sourceRect}";
+            }
+            return $"{this.Tile} :: {this.numberOfWeeds} :: {this.texture.Value} :: {flowerStr}";
+            
         }
 
 

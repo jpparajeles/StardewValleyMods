@@ -100,6 +100,11 @@ namespace WildFlowersReimagined
                 }
 
                 this.Monitor.Log($"{current}:{sts}:{currPos} has {terrainFeature}", LogLevel.Info);
+
+                if (terrainFeature is FlowerGrass fgT)
+                {
+                    this.Monitor.Log(fgT.ToDebugString(), LogLevel.Info);
+                }
             }
         }
 
@@ -511,11 +516,7 @@ namespace WildFlowersReimagined
                 flowerConfigEnabled = true;
             }
 
-            // if this is not the main player, skip adding data to prevent a crash
-            if (!Context.IsMainPlayer)
-            {
-                return;
-            }
+
 
             // Get all locations where flowers may spawn
             var validLocations = GetValidLocations();
@@ -523,6 +524,22 @@ namespace WildFlowersReimagined
             if (validLocations.Count < 1)
             {
                 this.Monitor.LogOnce("Unable to find a valid location, unable to proceed", LogLevel.Error);
+                return;
+            }
+
+            // if this is not the main player, skip adding data to prevent a crash
+            if (!Context.IsMainPlayer)
+            {
+                foreach (var location in validLocations)
+                {
+                    foreach(var (vector, terrainFeature) in location.terrainFeatures.Pairs)
+                    {
+                        if (terrainFeature is FlowerGrass flowerGrass)
+                        {
+                            flowerGrass.Crop?.updateDrawMath(vector);
+                        }
+                    }
+                }
                 return;
             }
 
