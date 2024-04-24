@@ -5,6 +5,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using System.Xml.Serialization;
 using StardewValley.Tools;
+using System;
 
 namespace WildFlowersReimagined
 {
@@ -29,6 +30,43 @@ namespace WildFlowersReimagined
             set
             {
                 netCrop.Value = value;
+            }
+        }
+
+        [XmlIgnore]
+        public override GameLocation Location
+        {
+            get
+            {
+                return base.Location;
+            }
+            set
+            {
+                base.Location = value;
+                if (netCrop.Value != null)
+                {
+                    netCrop.Value.currentLocation = value;
+                }
+            }
+        }
+
+
+        [XmlElement("tile")]
+        public readonly NetVector2 netTile = new NetVector2();
+
+        public override Vector2 Tile
+        {
+            get
+            {
+                return this.netTile.Value;
+            }
+            set
+            {
+                this.netTile.Value = value;
+                if (netCrop.Value != null)
+                {
+                    netCrop.Value.tilePosition = value;
+                }
             }
         }
 
@@ -66,14 +104,14 @@ namespace WildFlowersReimagined
 
         public FlowerGrass() : base()
         {
-            // Location = Game1.currentLocation;
+            Location = Game1.currentLocation;
             FlowerGrassConfig = new FlowerGrassConfig();
             
         }
 
         public FlowerGrass(int which, int numberOfWeeds, Crop crop, FlowerGrassConfig flowerGrassConfig) : this()
         {
-            Location = Game1.currentLocation;
+            //Location = Game1.currentLocation;
             grassType.Value = (byte)which;
             this.numberOfWeeds.Value = numberOfWeeds;
             this.Crop = crop;
@@ -162,7 +200,6 @@ namespace WildFlowersReimagined
                 flowerStr = $"{this.Crop.DrawnCropTexture} ::: {this.Crop.forageCrop.Value} ::: {this.Crop.flip.Value} ::: {this.Crop.sourceRect}";
             }
             return $"{this.Tile} :: {this.numberOfWeeds} :: {this.texture.Value} :: {flowerStr}";
-            
         }
 
 
