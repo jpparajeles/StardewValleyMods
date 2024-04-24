@@ -75,7 +75,7 @@ namespace WildFlowersReimagined
         public override void initNetFields()
         {
             base.initNetFields();
-            base.NetFields.AddField(netCrop, "netCrop");
+            base.NetFields.AddField(netCrop, "netCrop").AddField(netTile, "netTile");
             netCrop.Interpolated(interpolate: false, wait: false);
             netCrop.OnConflictResolve += delegate (Crop rejected, Crop accepted)
             {
