@@ -422,7 +422,7 @@ namespace WildFlowersReimagined
                     else
                     {
                         location.terrainFeatures[key] = grassTuple.originalGrass;
-
+                        
                         // prune tiles without flowers
                         if (grassTuple.flowerGrass.Crop == null)
                         {
@@ -590,10 +590,12 @@ namespace WildFlowersReimagined
                         if (localFlowers.Contains(flowerGrass.Crop.netSeedIndex.Value) || (Config.PreserveFlowersOnProbability0 && localFlowerCandidates.Contains(flowerGrass.Crop.netSeedIndex.Value)))
                         {
                             location.terrainFeatures[key] = flowerGrass;
+                            /*
                             if (!flowerGrass.Tile.Equals(key))
                             {
                                 flowerGrass.Tile = key;
                             }
+                            */
                         }
                         else
                         {
