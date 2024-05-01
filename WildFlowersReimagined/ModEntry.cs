@@ -101,6 +101,7 @@ namespace WildFlowersReimagined
 
                 this.Monitor.Log($"{current}:{sts}:{currPos} has {terrainFeature}", LogLevel.Info);
 
+
                 if (terrainFeature is FlowerGrass fgT)
                 {
                     this.Monitor.Log(fgT.ToDebugString(), LogLevel.Info);
@@ -421,8 +422,10 @@ namespace WildFlowersReimagined
                     }
                     else
                     {
-                        location.terrainFeatures[key] = grassTuple.originalGrass;
-                        
+                        // location.terrainFeatures[key] = grassTuple.originalGrass;
+                        location.terrainFeatures.Remove(key);
+                        location.terrainFeatures.Add(key, grassTuple.originalGrass);
+
                         // prune tiles without flowers
                         if (grassTuple.flowerGrass.Crop == null)
                         {
@@ -571,6 +574,7 @@ namespace WildFlowersReimagined
                 {
                     this.Monitor.LogOnce($"{location.Name}: {locationSeason} has {localFlowers.Count} flowers");
                 }
+                var replacements = new List<(Vector2 key, FlowerGrass replacement)>();
                 foreach (var pair in location.terrainFeatures.Pairs.Where(p => p.Value is Grass))
                 {
                     var key = pair.Key;
@@ -589,7 +593,8 @@ namespace WildFlowersReimagined
                         // keep the flower if it's in the probability list or PreserveFlowersOnProbability0 and it's in the candidate list
                         if (localFlowers.Contains(flowerGrass.Crop.netSeedIndex.Value) || (Config.PreserveFlowersOnProbability0 && localFlowerCandidates.Contains(flowerGrass.Crop.netSeedIndex.Value)))
                         {
-                            location.terrainFeatures[key] = flowerGrass;
+                            // location.terrainFeatures[key] = flowerGrass;
+                            replacements.Add((key, flowerGrass));
                             /*
                             if (!flowerGrass.Tile.Equals(key))
                             {
@@ -626,12 +631,20 @@ namespace WildFlowersReimagined
 
                             var flowerGrass = new FlowerGrass(grassValue.grassType.Value, grassValue.numberOfWeeds.Value, crop, this.Config.FlowerGrassConfig);
 
-                            location.terrainFeatures[key] = flowerGrass;
+                            // location.terrainFeatures.Remove(key);
+                            // location.terrainFeatures.Add(key, flowerGrass);
+                            //location.terrainFeatures[key] = flowerGrass;
+                            replacements.Add((key, flowerGrass));
                             grassValue.modData[modDataKey] = "FG replaced";
 
                             localPatchMap[key] = (flowerGrass, grassValue);
                         }
                     }
+                }
+                foreach (var (key, flowerGrass) in replacements)
+                {
+                    location.terrainFeatures.Remove(key);
+                    location.terrainFeatures.Add(key, flowerGrass);
                 }
             }
         }
