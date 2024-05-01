@@ -196,7 +196,14 @@ namespace WildFlowersReimagined
             {
                 flowerStr = $"{this.Crop.DrawnCropTexture} ::: {this.Crop.forageCrop.Value} ::: {this.Crop.flip.Value} ::: {this.Crop.sourceRect}";
             }
-            return $"{this.Tile} :: {this.numberOfWeeds} :: {this.texture.Value} :: {flowerStr}";
+
+            var location = "?";
+            if (this.Location != null)
+            {
+                location = this.Location.NameOrUniqueName;
+            }
+            
+            return $"{this.Tile}@{location} :: {this.numberOfWeeds} :: {this.texture.Value} :: {flowerStr}";
         }
 
 
