@@ -1,3 +1,6 @@
+# 2.2.0 
+- *BUGFIX*: Fixes flower getting destroyed accidentally when inventory was full on harvest by hand
+
 # 2.1.0
 - *New Feature*: Adds option to try to spawn flowers in all locations, useful for mods like SVE
 - *BUGFIX*: Prevents multiplayer from crashing by disabling the mod outside the main client. Multiplayer support is been look at it, but it will take more time

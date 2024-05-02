@@ -81,8 +81,11 @@ namespace WildFlowersReimagined
         /// <param name="useScythe">if it was scythe or hand. The game code has different behaviors for this</param>
         private void Harvest(Vector2 tileLocation, bool useScythe)
         {
-            this.Crop.harvest((int)tileLocation.X, (int)tileLocation.Y, fakeDirt, isForcedScytheHarvest: useScythe);
-            this.Crop = null;
+            var successful = this.Crop.harvest((int)tileLocation.X, (int)tileLocation.Y, fakeDirt, isForcedScytheHarvest: useScythe);
+            if (successful)
+            {
+                this.Crop = null;
+            }
         }
 
         public override bool performUseAction(Vector2 tileLocation)
