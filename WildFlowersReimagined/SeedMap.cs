@@ -38,6 +38,7 @@ namespace WildFlowersReimagined
             }
             initialized = true;
             mapData.Clear();
+            checkMap.Clear();
             foreach (var (seedId, cropData) in Game1.cropData)
             {
                 if (!mapData.TryGetValue(cropData.HarvestItemId, out var seedValues))
