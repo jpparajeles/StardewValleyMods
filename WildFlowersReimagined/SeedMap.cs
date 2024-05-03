@@ -1,4 +1,5 @@
 ﻿using Microsoft.CodeAnalysis;
+using StardewModdingAPI;
 using StardewValley;
 using StardewValley.GameData.Crops;
 using StardewValley.ItemTypeDefinitions;
@@ -12,8 +13,11 @@ namespace WildFlowersReimagined
         /// Reformatted game data for faster lookups
         /// </summary>
         private readonly Dictionary<string, (ItemMetadata flowerData, List<(string seedId, CropData cropData)> seeds)> mapData = new();
+
+        private readonly Dictionary<ItemMetadata, string> checkMap = new();
+
         /// <summary>
-        /// Flag to mark the seed mnap as initialized
+        /// Flag to mark the seed map as initialized
         /// </summary>
         private bool initialized = false;
 
@@ -26,7 +30,7 @@ namespace WildFlowersReimagined
         /// Initializes the seed map, this needs to be done after all the mods have loaded to ensure we have access to modded data
         /// </summary>
         /// <param name="force">Force the initialization of the map even if it's supposed to be full</param>
-        public void Init(bool force=false)
+        public void Init(IMonitor monitor, bool force=false)
         {
             if (initialized && !force)
             {
@@ -43,17 +47,23 @@ namespace WildFlowersReimagined
                     
                     
                     if (itemInfo == null || !itemInfo.Exists()) {
-                        // todo: get a logger in here
+                        monitor.Log($"{seedId} doesn't have a valid item info", LogLevel.Info);
                         continue;
                     }
                     if (itemInfo.GetParsedData().Category != StardewValley.Object.flowersCategory)
                     {
                         continue;
                     }
-
+                    if (checkMap.TryGetValue(itemInfo, out var knownName))
+                    {
+                        monitor.Log($"{seedId} has a conflict with {knownName} skipping", LogLevel.Warn);
+                        continue;
+                    }
                     seedValues = (itemInfo, localList);
                     mapData[cropData.HarvestItemId] = seedValues;
+                    checkMap[itemInfo] = cropData.HarvestItemId;
                 }
+                
                 seedValues.seeds.Add((seedId, cropData));
             }
 
@@ -62,7 +72,7 @@ namespace WildFlowersReimagined
         /// <summary>
         /// Returns a list of all known flowers
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Map of flower item data to seed data</returns>
         public Dictionary<ItemMetadata, List<ItemMetadata>> GetFlowerConfigMap()
         {
             return mapData.ToDictionary(p => p.Value.flowerData, 
@@ -76,7 +86,7 @@ namespace WildFlowersReimagined
         /// Return a list of all flowers for this location
         /// </summary>
         /// <param name="location"> Location to filter down the list</param>
-        /// <returns></returns>
+        /// <returns>List of seeds for this location</returns>
         public List<string> GetSeedCandidatesForLocation(GameLocation location)
         {
             var candidates = new List<string>();
@@ -98,7 +108,7 @@ namespace WildFlowersReimagined
         /// </summary>
         /// <param name="location">Location to filter the seeds</param>
         /// <param name="flowerProbabilityMap">Map of the "probability" of each seed</param>
-        /// <returns></returns>
+        /// <returns>List of seed for this location with the probability map applied</returns>
         public List<string> GetSeedsForLocation(GameLocation location, Dictionary<string, int> flowerProbabilityMap) {
             var seeds = new List<string>();
             var candidates = GetSeedCandidatesForLocation(location);

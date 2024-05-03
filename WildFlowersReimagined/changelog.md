@@ -1,3 +1,6 @@
+# 2.3.0
+- *BUGFIX*: Fixes an issue where multiple flower ids have the same item data
+
 # 2.2.0 
 - *BUGFIX*: Fixes flower getting destroyed accidentally when inventory was full on harvest by hand
 

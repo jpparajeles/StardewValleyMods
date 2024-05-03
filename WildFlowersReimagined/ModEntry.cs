@@ -460,7 +460,7 @@ namespace WildFlowersReimagined
             }
 
             //Init the seedmap
-            seedMap.Init();
+            seedMap.Init(this.Monitor);
             if (!this.flowerConfigEnabled)
             {
                 AddFlowerConfig();
