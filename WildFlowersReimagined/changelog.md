@@ -1,3 +1,8 @@
+# 3.0.0
+- *New feature*: Multiplayer support: Online multiplayer should be functional using Spacecore synchronization
+- *New Dependency* SpaceCore
+- *Minor fix* Set MinimumApiVersion to `4.0.0` to ensure it loads with Stardew 1.6
+
 # 2.3.0
 - *BUGFIX*: Fixes an issue where multiple flower ids have the same item data
 
