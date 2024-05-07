@@ -1,4 +1,4 @@
-﻿using StardewValley;
+using StardewValley;
 using StardewValley.TerrainFeatures;
 using Netcode;
 using Microsoft.Xna.Framework;
