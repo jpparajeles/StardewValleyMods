@@ -15,7 +15,8 @@ namespace WildFlowersReimagined
 
         private const string modDataKey = "jpp.WildFlowersReimagined.flower";
         private const string saveDataKey = "jpp.WildFlowersReimagined.flower";
-
+        
+        private const bool debugFlag = false;
 
         /// <summary>
         /// The mod configuration from the player.
@@ -39,7 +40,9 @@ namespace WildFlowersReimagined
         /// </summary>
         private readonly SeedMap seedMap = new();
 
-        
+        private static FlowerGrassConfig? configMirrorFlowerGrass = null; 
+
+
 
 
 
@@ -61,6 +64,8 @@ namespace WildFlowersReimagined
                 return;
             }
 
+            configMirrorFlowerGrass = Config.FlowerGrassConfig;
+
             I18n.Init(helper.Translation);
 
             helper.Events.GameLoop.DayStarted += this.OnDayStart;
@@ -69,12 +74,26 @@ namespace WildFlowersReimagined
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunch;
 
             //dbg
-            helper.Events.Input.ButtonPressed += this.DbgButtonPressed;
+            if (debugFlag)
+            {
+                helper.Events.Input.ButtonPressed += this.DbgButtonPressed;
+            }
 
 
             this.Monitor.LogOnce("Mod enabled and ready", LogLevel.Debug);
 
         }
+
+        public static FlowerGrassConfig ConfigLoadedFlowerConfig()
+        {
+            // This case should almost never happen
+            if (configMirrorFlowerGrass == null)
+            {
+                return new FlowerGrassConfig();
+            }
+            return configMirrorFlowerGrass;
+        }
+
         /*********
         ** Private methods
         *********/

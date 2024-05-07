@@ -105,8 +105,7 @@ namespace WildFlowersReimagined
         public FlowerGrass() : base()
         {
             Location = Game1.currentLocation;
-            FlowerGrassConfig = new FlowerGrassConfig();
-            
+            FlowerGrassConfig = ModEntry.ConfigLoadedFlowerConfig();
         }
 
         public FlowerGrass(int which, int numberOfWeeds, Crop crop, FlowerGrassConfig flowerGrassConfig) : this()
