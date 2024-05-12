@@ -1,3 +1,6 @@
+# 3.1.0
+- *New feature*: Added the KeepRegrowFlower option to either preserve or remove flowers that bloom multiple times (ex. Cornucopia Trellises flowers)
+
 # 3.0.0
 - *New feature*: Multiplayer support: Online multiplayer should be functional using Spacecore synchronization
 - *New Dependency* SpaceCore

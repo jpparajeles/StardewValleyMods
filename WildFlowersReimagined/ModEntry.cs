@@ -16,7 +16,7 @@ namespace WildFlowersReimagined
         private const string modDataKey = "jpp.WildFlowersReimagined.flower";
         private const string saveDataKey = "jpp.WildFlowersReimagined.flower";
         
-        private const bool debugFlag = false;
+        private const bool debugFlag = true;
 
         /// <summary>
         /// The mod configuration from the player.
@@ -211,6 +211,14 @@ namespace WildFlowersReimagined
                 tooltip: I18n.Config_AllLocations_Tooltip,
                 getValue: () => this.Config.CheckAllLocations,
                 setValue: value => this.Config.CheckAllLocations = value
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: I18n.Config_KeepRegrowFlower_Key,
+                tooltip: I18n.Config_KeepRegrowFlower_Tooltip,
+                getValue: () => this.Config.FlowerGrassConfig.KeepRegrowFlower,
+                setValue: value => this.Config.FlowerGrassConfig.KeepRegrowFlower = value
             );
         }
 

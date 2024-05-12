@@ -17,5 +17,7 @@
     public sealed class FlowerGrassConfig
     {
         public bool UseScythe { get; set; } = true;
+
+        public bool KeepRegrowFlower {  get; set; } = true;
     }
 }

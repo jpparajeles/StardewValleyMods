@@ -170,6 +170,22 @@ namespace WildFlowersReimagined
             {
                 this.Crop = null;
             }
+            else
+            {
+                // handle special case of re-growable flowers
+                var cropData = this.Crop.GetData();
+                if (this.Crop.dayOfCurrentPhase.Value > 0 && cropData.RegrowDays >= 0)
+                {
+                    // this means we are on a crop with regrow
+                    // If the player doesn't want to keep the crop delete it, as the change of dayOfCurrentPhase means it was added to
+                    // the inventory
+                    if (!this.FlowerGrassConfig.KeepRegrowFlower)
+                    {
+                        this.Crop = null;
+                    }
+
+                }
+            }
         }
 
         public override bool performUseAction(Vector2 tileLocation)
