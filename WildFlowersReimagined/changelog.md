@@ -1,3 +1,6 @@
+# 3.1.1
+- *Note*: Swap the RNG from the global one to a local one to not affect any random event from the game directly
+
 # 3.1.0
 - *New feature*: Added the KeepRegrowFlower option to either preserve or remove flowers that bloom multiple times (ex. Cornucopia Trellises flowers)
 

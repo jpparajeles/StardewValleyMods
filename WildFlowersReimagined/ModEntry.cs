@@ -40,6 +40,8 @@ namespace WildFlowersReimagined
         /// </summary>
         private readonly SeedMap seedMap = new();
 
+        private readonly Random localRNG = new Random(Guid.NewGuid().GetHashCode());
+
         private static FlowerGrassConfig? configMirrorFlowerGrass = null; 
 
 
@@ -638,12 +640,12 @@ namespace WildFlowersReimagined
                     // if not let's do random chance
                     else
                     {
-                        var chance = Game1.random.NextDouble();
+                        var chance = localRNG.NextDouble();
                         // this.Monitor.Log($"{key} {chance}", LogLevel.Info);
                         if (chance <= this.Config.WildflowerGrowChance)
                         {
 
-                            var choice = Game1.random.ChooseFrom(localFlowers);
+                            var choice = localRNG.ChooseFrom(localFlowers);
 
                             var seed = Crop.getRandomFlowerSeedForThisSeason(locationSeason);
 
