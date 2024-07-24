@@ -16,7 +16,7 @@ namespace WildFlowersReimagined
         private const string modDataKey = "jpp.WildFlowersReimagined.flower";
         private const string saveDataKey = "jpp.WildFlowersReimagined.flower";
         
-        private const bool debugFlag = true;
+        private const bool debugFlag = false;
 
         /// <summary>
         /// The mod configuration from the player.
@@ -102,7 +102,7 @@ namespace WildFlowersReimagined
         
         private void DbgButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
-            if (e.Button == SButton.K)
+            if (SButton.K == e.Button)
             {
                 var currPos = e.Cursor.Tile;
                 var current = Game1.currentLocation;

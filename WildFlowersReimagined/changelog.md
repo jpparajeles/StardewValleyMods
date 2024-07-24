@@ -1,3 +1,6 @@
+# 3.1.2
+- *Bugfix*: Fix NullReferenceException on the debug code, also disable the debug code paths
+
 # 3.1.1
 - *Note*: Swap the RNG from the global one to a local one to not affect any random event from the game directly
 
