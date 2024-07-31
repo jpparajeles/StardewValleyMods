@@ -15,7 +15,9 @@ namespace WildFlowersReimagined
 
         private const string modDataKey = "jpp.WildFlowersReimagined.flower";
         private const string saveDataKey = "jpp.WildFlowersReimagined.flower";
-        
+
+        private const string ignoreListAssetKey = "Mods/jpp.WildFlowersReimagined/IgnoreList";
+
         private const bool debugFlag = false;
 
         /// <summary>
@@ -75,6 +77,9 @@ namespace WildFlowersReimagined
             helper.Events.GameLoop.SaveLoaded += this.OnSaveLoaded;
             helper.Events.GameLoop.GameLaunched += this.OnGameLaunch;
 
+            helper.Events.Content.AssetRequested += this.OnAssetRequested;
+            helper.Events.Content.AssetReady += this.OnAssetReady;
+           
             //dbg
             if (debugFlag)
             {
@@ -85,6 +90,7 @@ namespace WildFlowersReimagined
             this.Monitor.LogOnce("Mod enabled and ready", LogLevel.Debug);
 
         }
+
 
         public static FlowerGrassConfig ConfigLoadedFlowerConfig()
         {
@@ -100,6 +106,11 @@ namespace WildFlowersReimagined
         ** Private methods
         *********/
         
+        /// <summary>
+        /// Debug call interceptor
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void DbgButtonPressed(object? sender, ButtonPressedEventArgs e)
         {
             if (SButton.K == e.Button)
@@ -134,6 +145,33 @@ namespace WildFlowersReimagined
             }
         }
 
+        /// <summary>
+        /// Wire the Assets
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnAssetRequested(object? sender, AssetRequestedEventArgs e)
+        {
+            if (e.Name.IsEquivalentTo(ignoreListAssetKey))
+            {
+                e.LoadFrom(() => new IgnoreList(), AssetLoadPriority.Medium);
+            }
+        }
+
+        /// <summary>
+        /// Load the assets into the Seed map
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void OnAssetReady(object? sender, AssetReadyEventArgs e)
+        {
+            if (e.Name.IsEquivalentTo(ignoreListAssetKey))
+            {
+                var ignoreList = Game1.content.Load<IgnoreList>(ignoreListAssetKey);
+                this.seedMap.Init(this.Monitor, ignoreList, force: true);
+
+            }
+        }
 
 
 
@@ -544,8 +582,10 @@ namespace WildFlowersReimagined
                 return;
             }
 
-            //Init the seedmap
-            seedMap.Init(this.Monitor);
+            var ignoreList = Game1.content.Load<IgnoreList>(ignoreListAssetKey);
+
+            //Init the seed map
+            seedMap.Init(this.Monitor, ignoreList);
             if (!this.flowerConfigEnabled)
             {
                 AddFlowerConfig();

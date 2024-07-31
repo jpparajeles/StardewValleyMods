@@ -1,3 +1,6 @@
+# 3.2.0
+- *Mod author feature* *New Feature*: Adds the Asset `Mods/jpp.WildFlowersReimagined/IgnoreList` that allows mod authors to prevent flowers from spawning.
+
 # 3.1.2
 - *Bugfix*: Fix NullReferenceException on the debug code, also disable the debug code paths
 

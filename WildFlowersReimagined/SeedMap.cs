@@ -11,9 +11,13 @@ namespace WildFlowersReimagined
     {
         /// <summary>
         /// Reformatted game data for faster lookups
+        /// Flower Name -> ( Flower Data, List[(Seed id, Crop Data) ] )
         /// </summary>
         private readonly Dictionary<string, (ItemMetadata flowerData, List<(string seedId, CropData cropData)> seeds)> mapData = new();
 
+        /// <summary>
+        /// Map to check if a seed has conflicts
+        /// </summary>
         private readonly Dictionary<ItemMetadata, string> checkMap = new();
 
         /// <summary>
@@ -30,17 +34,35 @@ namespace WildFlowersReimagined
         /// Initializes the seed map, this needs to be done after all the mods have loaded to ensure we have access to modded data
         /// </summary>
         /// <param name="force">Force the initialization of the map even if it's supposed to be full</param>
-        public void Init(IMonitor monitor, bool force=false)
+        public void Init(IMonitor monitor, IgnoreList? ignoreList=null, bool force = false)
         {
             if (initialized && !force)
             {
                 return;
             }
+            if (ignoreList == null)
+            {
+                ignoreList = new IgnoreList();
+            }
             initialized = true;
             mapData.Clear();
             checkMap.Clear();
             foreach (var (seedId, cropData) in Game1.cropData)
-            {
+            {   
+                // skip the item if it's in the seeds ignore list
+                if (ignoreList.Seeds.Contains(seedId))
+                {
+                    monitor.Log($"Skipping {seedId}, as requested by the seed ignore list", LogLevel.Trace);
+                    continue;
+                }
+                // skip the item if the crop / flower is on the flower ignore list
+                if (ignoreList.Flowers.Contains(cropData.HarvestItemId))
+                {
+                    monitor.Log($"Skipping {seedId}, as requested by the flower ignore list", LogLevel.Trace);
+                    continue;
+                }
+
+                // if there is no crop data, initialize the crop data
                 if (!mapData.TryGetValue(cropData.HarvestItemId, out var seedValues))
                 {
                     var localList = new List<(string seedId, CropData cropData)>();
@@ -122,5 +144,12 @@ namespace WildFlowersReimagined
             }
             return seeds;
         }
+    }
+
+    public sealed class IgnoreList
+    {
+        public IgnoreList() { }
+        public List<string> Seeds { get; set; } = new List<string>();
+        public List<string> Flowers { get; set; } = new List<string>();
     }
 }
