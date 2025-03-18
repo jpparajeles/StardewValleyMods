@@ -84,7 +84,7 @@ namespace WildFlowersReimagined
                     queuedActions.Add(delegate (GameLocation gLocation, Vector2 tileLocation)
                     {
                         Vector2 vector = tileLocation * 64f;
-                        gLocation.debris.Add(new Debris(rejected.netSeedIndex, vector, vector));
+                        gLocation.debris.Add(new Debris(rejected.netSeedIndex.Value, vector, vector));
                     });
                     base.NeedsUpdate = true;
                 }

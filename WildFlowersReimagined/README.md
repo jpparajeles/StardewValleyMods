@@ -20,12 +20,10 @@ You can use Generic Mod Config Menu or edit the `config.json` file. This are the
 # Limitations
 - The flowers don't count for Beehives to make Honey
 - It doesn't include Forable Flowers ( Sweet Pea, Crocus ) as they don't have a seed id
-- Right now Generic Mod config entries are only abailable on English, howerver I18n module is available, so feel free to contribute translations
-- Multiplayer have not been tested.
-- Linux/macOS have not been tested, Let me know if they work!
+- Right now Generic Mod config entries are only available on English, however I18n module is available, so feel free to contribute translations
+
 
 # Compatibility
-- Works with Stardew Valley 1.6 on Windows.
-- Works in single-player
+- Works with Stardew Valley 1.6.
 - It should work with any modded Flowers as long as they have seeds as well. 
 

@@ -6,6 +6,7 @@ using StardewValley;
 using StardewValley.Extensions;
 using StardewValley.Menus;
 using StardewValley.TerrainFeatures;
+using System.Collections.Generic;
 
 namespace WildFlowersReimagined
 {
@@ -17,6 +18,10 @@ namespace WildFlowersReimagined
         private const string saveDataKey = "jpp.WildFlowersReimagined.flower";
 
         private const string ignoreListAssetKey = "Mods/jpp.WildFlowersReimagined/IgnoreList";
+
+        private const string flowerProbabilityConfigPageId = "flower_config";
+        private const string presetConfigPageId = "preset_config";
+
 
         private const bool debugFlag = false;
 
@@ -42,9 +47,11 @@ namespace WildFlowersReimagined
         /// </summary>
         private readonly SeedMap seedMap = new();
 
-        private readonly Random localRNG = new Random(Guid.NewGuid().GetHashCode());
+        private readonly EntitlementResolver entitlementResolver = new();
 
-        private static FlowerGrassConfig? configMirrorFlowerGrass = null; 
+        private readonly Random localRNG = new(Guid.NewGuid().GetHashCode());
+
+        private static FlowerGrassConfig? configMirrorFlowerGrass = null;
 
 
 
@@ -79,7 +86,7 @@ namespace WildFlowersReimagined
 
             helper.Events.Content.AssetRequested += this.OnAssetRequested;
             helper.Events.Content.AssetReady += this.OnAssetReady;
-           
+
             //dbg
             if (debugFlag)
             {
@@ -105,7 +112,7 @@ namespace WildFlowersReimagined
         /*********
         ** Private methods
         *********/
-        
+
         /// <summary>
         /// Debug call interceptor
         /// </summary>
@@ -272,6 +279,112 @@ namespace WildFlowersReimagined
                 return;
             }
 
+
+            configMenu.AddPageLink(
+                mod: this.ModManifest,
+                pageId: presetConfigPageId,
+                text: I18n.Config_PresetPage_Link,
+                tooltip: I18n.Config_PresetPage_Tooltip
+            );
+
+
+            configMenu.AddPageLink(
+                mod: this.ModManifest,
+                pageId: flowerProbabilityConfigPageId,
+                text: I18n.Config_FlowerPage_Link,
+                tooltip: I18n.Config_FlowerPage_Tooltip
+            );
+
+            configMenu.AddPage(
+                mod: this.ModManifest,
+                pageId: presetConfigPageId,
+                pageTitle: I18n.Config_PresetPage_Key
+            );
+
+            configMenu.AddParagraph(
+                mod: this.ModManifest,
+                text: I18n.Config_PresetPage_Explanation
+                );
+
+            var flowers = seedMap.GetFlowerConfigMap();
+
+            var total_seeds = flowers.Values.Sum(list => list.Count);
+            var total_flowers = flowers.Count;
+
+            var example = flowers.ElementAt(localRNG.Next(0, total_flowers)).Key.CreateItem(0);
+
+            configMenu.AddComplexOption(
+                mod: this.ModManifest,
+                name: () => $"{I18n.Config_PresetPage_FlowerCount_Part1()} {total_seeds} {I18n.Config_PresetPage_FlowerCount_Part2()}",
+                draw: (sb, v) => example.drawInMenu(sb, v, 1.0f),
+                afterSave: () => this.entitlementResolver.Resolve(Monitor, this.seedMap, this.Config.FlowerProbabilityMap)
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: I18n.Config_PresetPage_Regenerate_Key,
+                tooltip: I18n.Config_PresetPage_Regenerate_Tooltip,
+                getValue: () => this.entitlementResolver.Enabled,
+                setValue: (v) => this.entitlementResolver.Enabled = v
+            );
+
+            configMenu.AddBoolOption(
+                mod: this.ModManifest,
+                name: I18n.Config_PresetPage_RespectDisabled_Key,
+                tooltip: I18n.Config_PresetPage_RespectDisabled_Tooltip,
+                getValue: () => this.entitlementResolver.RespectDisabledFlowers,
+                setValue: (v) => this.entitlementResolver.RespectDisabledFlowers = v
+            );
+
+            var modVanillaEntitlementDecoder = new Dictionary<string, ModVanillaEntitlement>
+            {
+                [I18n.Config_PresetPage_ModdedVanillaEntitlement_Values_NoModded()] = ModVanillaEntitlement.NoModded,
+                [I18n.Config_PresetPage_ModdedVanillaEntitlement_Values_LessModded()] = ModVanillaEntitlement.LessModded,
+                [I18n.Config_PresetPage_ModdedVanillaEntitlement_Values_Normal()] = ModVanillaEntitlement.Normal,
+                [I18n.Config_PresetPage_ModdedVanillaEntitlement_Values_LessVanilla()] = ModVanillaEntitlement.LessVanilla,
+                [I18n.Config_PresetPage_ModdedVanillaEntitlement_Values_NoVanilla()] = ModVanillaEntitlement.NoVanilla,
+            };
+            var modVanillaEntitlementEncoder = modVanillaEntitlementDecoder.ToDictionary((i) => i.Value, (i) => i.Key);
+            var modVanillaEntitlementOptions = modVanillaEntitlementDecoder.Keys.ToArray();
+
+            configMenu.AddTextOption(
+                mod: this.ModManifest,
+                name: I18n.Config_PresetPage_ModdedVanillaEntitlement_Key,
+                tooltip: I18n.Config_PresetPage_ModdedVanillaEntitlement_Tooltip,
+                getValue: () => modVanillaEntitlementEncoder.GetValueOrDefault(this.entitlementResolver.ModVanilla, I18n.Config_PresetPage_ModdedVanillaEntitlement_Values_Normal()),
+                setValue: (v) => this.entitlementResolver.ModVanilla = modVanillaEntitlementDecoder.GetValueOrDefault(v, ModVanillaEntitlement.Normal),
+                allowedValues: modVanillaEntitlementOptions
+            );
+
+            var entitlementAlgorithmDecoder = new Dictionary<string, EntitlementAlgorithm>
+            {
+                [I18n.Config_PresetPage_AlgorithmEntitlement_Values_Equal()] = EntitlementAlgorithm.Equal,
+                [I18n.Config_PresetPage_AlgorithmEntitlement_Values_Price()] = EntitlementAlgorithm.Price,
+                [I18n.Config_PresetPage_AlgorithmEntitlement_Values_Random()] = EntitlementAlgorithm.Random
+            };
+            var entitlementAlgorithmEncoder = entitlementAlgorithmDecoder.ToDictionary((i) => i.Value, (i) => i.Key);
+            var entitlementAlgorithmOptions = entitlementAlgorithmDecoder.Keys.ToArray();
+
+            configMenu.AddTextOption(
+                mod: this.ModManifest,
+                name: I18n.Config_PresetPage_AlgorithmEntitlement_Key,
+                tooltip: I18n.Config_PresetPage_AlgorithmEntitlement_Tooltip,
+                getValue: () => entitlementAlgorithmEncoder.GetValueOrDefault(this.entitlementResolver.Algorithm, I18n.Config_PresetPage_AlgorithmEntitlement_Values_Equal()),
+                setValue: (v) => this.entitlementResolver.Algorithm = entitlementAlgorithmDecoder.GetValueOrDefault(v, EntitlementAlgorithm.Equal),
+                allowedValues: entitlementAlgorithmOptions
+            );
+
+            configMenu.AddPage(
+                mod: this.ModManifest,
+                pageId: flowerProbabilityConfigPageId,
+                pageTitle: I18n.Config_FlowerPage_Key
+            );
+
+            configMenu.AddParagraph(
+                mod: this.ModManifest,
+                text: I18n.Config_FlowerPage_Description
+            );
+
             // load the decoder
             string[] flowerProbabilityLabels =
             {
@@ -282,32 +395,9 @@ namespace WildFlowersReimagined
                 I18n.Config_FlowerProbability_4(),
                 I18n.Config_FlowerProbability_5(),
 
-            };        
-
+            };
             var flowerProbabilityDecoder = flowerProbabilityLabels.Select((element, index) => (element, index)).ToDictionary(p => p.element, p => p.index);
 
-
-            configMenu.AddPageLink(
-                mod: this.ModManifest,
-                pageId: "flower_config",
-                text: I18n.Config_FlowerPage_Link,
-                tooltip: I18n.Config_FlowerPage_Tooltip
-            );
-            configMenu.AddPage(
-                mod: this.ModManifest,
-                pageId: "flower_config",
-                pageTitle: I18n.Config_FlowerPage_Key
-            );
-
-            configMenu.AddParagraph(
-                mod: this.ModManifest,
-                text: I18n.Config_FlowerPage_Description
-            );
-
-
-            // var flowers = Game1.objectData.Where(p => p.Value.Category == StardewValley.Object.flowersCategory).ToList();
-            var flowers = seedMap.GetFlowerConfigMap();
-            
             foreach (var (flowerInfo, SeedListData) in flowers)
             {
                 var flowerData = flowerInfo.GetParsedData();
@@ -324,11 +414,10 @@ namespace WildFlowersReimagined
                     tooltip: () => $"{flowerData.ItemId}:{flowerData.InternalName}",
                     draw: (sb, v) =>
                     {
-
                         item.drawInMenu(sb, v, 1.0f);
                     }
                 );
-                // we cannot gargantee that there is only one seed per flower
+                // we cannot guarantee that there is only one seed per flower
                 foreach (var seedInfo in SeedListData)
                 {
                     var seedData = seedInfo.GetParsedData();
@@ -352,7 +441,7 @@ namespace WildFlowersReimagined
         private void OnSaveLoaded(object? sender, SaveLoadedEventArgs e)
         {
             // if this is not the main player, don't try to load the data
-            if (! Context.IsMainPlayer)
+            if (!Context.IsMainPlayer)
             {
                 return;
             }
@@ -608,7 +697,7 @@ namespace WildFlowersReimagined
             {
                 foreach (var location in validLocations)
                 {
-                    foreach(var (vector, terrainFeature) in location.terrainFeatures.Pairs)
+                    foreach (var (vector, terrainFeature) in location.terrainFeatures.Pairs)
                     {
                         if (terrainFeature is FlowerGrass flowerGrass)
                         {
@@ -617,7 +706,7 @@ namespace WildFlowersReimagined
                                 flowerGrass.Tile = vector;
                                 flowerGrass.Location = location;
                                 flowerGrass.dayUpdate();
-                            }   
+                            }
                         }
                     }
                 }

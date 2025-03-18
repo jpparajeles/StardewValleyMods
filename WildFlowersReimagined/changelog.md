@@ -1,3 +1,18 @@
+# 3.3.0
+- *Bugfix* Add more check for invalid flowers to prevent a null search on seed map initialization
+- *New feature*: Probabilities generator preset. A new option to generate a custom probability set based on vanilla vs modded flowers and an algorithm to scale the probability based on Equality, Randomness or Price
+    - Vanilla vs Modded
+      - No modded, Always Vanilla: Sets the modded flowers to Disabled
+      - Less modded: Will prefer vanilla flowers over modded flowers
+      - Normal: No behavior change based on Modded vs vanilla
+      - Less vanilla: Will prefer modded flowers over vanilla flowers
+      - No vanilla, Always modded: Sets the vanilla flowers to Disabled
+    - Algorithm
+      - Equal: Flowers will have the same probability to each other
+      - Price: The more expensive the flower, the less likely that it happen, specially if it's very expensive
+      - Random: Each flower will get a random probability
+- *Bugfix* Fix some typos
+
 # 3.2.0
 - *Mod author feature* *New Feature*: Adds the Asset `Mods/jpp.WildFlowersReimagined/IgnoreList` that allows mod authors to prevent flowers from spawning.
 
