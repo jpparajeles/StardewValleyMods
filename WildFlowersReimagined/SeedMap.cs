@@ -46,6 +46,7 @@ namespace WildFlowersReimagined
             {
                 ignoreList = new IgnoreList();
             }
+            monitor.Log("Initializing seed map", LogLevel.Trace);
             initialized = true;
             mapData.Clear();
             checkMap.Clear();
@@ -80,35 +81,43 @@ namespace WildFlowersReimagined
                     monitor.Log($"Skipping {seedId}, as requested by the flower ignore list", LogLevel.Trace);
                     continue;
                 }
-
-                // if there is no crop data, initialize the crop data
-                if (!mapData.TryGetValue(cropData.HarvestItemId, out var seedValues))
+                try
                 {
-                    var localList = new List<(string seedId, CropData cropData)>();
-                    var itemInfo = ItemRegistry.GetMetadata(cropData.HarvestItemId);
-                    
-                    
-                    if (itemInfo == null || !itemInfo.Exists()) {
-                        monitor.Log($"{seedId} doesn't have a valid item info", LogLevel.Info);
-                        continue;
-                    }
-                    if (itemInfo.GetParsedData().Category != StardewValley.Object.flowersCategory)
+                    // if there is no crop data, initialize the crop data
+                    if (!mapData.TryGetValue(cropData.HarvestItemId, out var seedValues))
                     {
-                        continue;
-                    }
-                    if (checkMap.TryGetValue(itemInfo, out var knownName))
-                    {
-                        monitor.Log($"{seedId} has a conflict with {knownName} skipping", LogLevel.Warn);
-                        continue;
-                    }
-                    seedValues = (itemInfo, localList);
-                    mapData[cropData.HarvestItemId] = seedValues;
-                    checkMap[itemInfo] = cropData.HarvestItemId;
-                }
-                
-                seedValues.seeds.Add((seedId, cropData));
-            }
+                        var localList = new List<(string seedId, CropData cropData)>();
+                        var itemInfo = ItemRegistry.GetMetadata(cropData.HarvestItemId);
 
+
+                        if (itemInfo == null || !itemInfo.Exists())
+                        {
+                            monitor.Log($"{seedId} doesn't have a valid item info", LogLevel.Info);
+                            continue;
+                        }
+                        if (itemInfo.GetParsedData().Category != StardewValley.Object.flowersCategory)
+                        {
+                            continue;
+                        }
+                        if (checkMap.TryGetValue(itemInfo, out var knownName))
+                        {
+                            monitor.Log($"{seedId} has a conflict with {knownName} skipping", LogLevel.Warn);
+                            continue;
+                        }
+                        seedValues = (itemInfo, localList);
+                        mapData[cropData.HarvestItemId] = seedValues;
+                        checkMap[itemInfo] = cropData.HarvestItemId;
+                    }
+
+                    seedValues.seeds.Add((seedId, cropData));
+                }
+                catch (ArgumentNullException ex)
+                {
+                    monitor.Log($"Unexpected error for {seedId} {cropData.HarvestItemId} ArgumentNullException, skipping", LogLevel.Warn);
+                    monitor.Log(ex.ToString(), LogLevel.Trace);
+                }
+            }
+            monitor.Log("Seed map ready", LogLevel.Trace);
         }
 
         /// <summary>

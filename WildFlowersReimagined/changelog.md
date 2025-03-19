@@ -1,5 +1,8 @@
+# 3.3.1
+- *Bugfix*: Fixes the double mod behavior
+
 # 3.3.0
-- *Bugfix* Add more check for invalid flowers to prevent a null search on seed map initialization
+- *Bugfix*: Add more check for invalid flowers to prevent a null search on seed map initialization
 - *New feature*: Probabilities generator preset. A new option to generate a custom probability set based on vanilla vs modded flowers and an algorithm to scale the probability based on Equality, Randomness or Price
     - Vanilla vs Modded
       - No modded, Always Vanilla: Sets the modded flowers to Disabled

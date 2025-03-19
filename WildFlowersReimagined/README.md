@@ -13,9 +13,9 @@ Each day a random number of flowers will appear on grass patches.
 
 ## Configuration
 You can use Generic Mod Config Menu or edit the `config.json` file. This are the options:
-- `ModEnabled`: controlls if the mod is enabled or not
-- `WildflowerGrowChance`: Controllls the probability that a grass patch grows a flower. In the config file `0.123` is equal to `12.3%%`
-- `FlowerGrassConfig.UseScythe`: Controlls if the harvest should be done by a Scythe
+- `ModEnabled`: controls if the mod is enabled or not
+- `WildflowerGrowChance`: Controls the probability that a grass patch grows a flower. In the config file `0.123` is equal to `12.3%%`
+- `FlowerGrassConfig.UseScythe`: Controls if the harvest should be done by a Scythe
 
 # Limitations
 - The flowers don't count for Beehives to make Honey
