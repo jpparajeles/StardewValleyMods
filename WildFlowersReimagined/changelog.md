@@ -1,5 +1,9 @@
+# 3.3.2
+- *Bugfix*: Removes invalid locations from the save file so it doesn't generate warnings on load
+- *Improvement*: Skip saving empty locations to reduce the amount of data saved and loaded 
+
 # 3.3.1
-- *Bugfix*: Fixes the double mod behavior
+- *Bugfix*: Fixes the extra 3.2.0 version included
 
 # 3.3.0
 - *Bugfix*: Add more check for invalid flowers to prevent a null search on seed map initialization
